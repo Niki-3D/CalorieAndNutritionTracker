@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 10,
   },
     nameText: {
     fontSize: 18,

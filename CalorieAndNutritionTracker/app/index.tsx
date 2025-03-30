@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { Text, View, StyleSheet, FlatList } from "react-native";
 import FoodItem from "./components/FoodItem";
 
 const foodItems = [
@@ -25,25 +25,28 @@ const foodItems = [
 
 export default function Index() {
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        padding: 20,
-        gap: 5,
-      
-      }}
-    >
-
-      {foodItems.map((item, index) => (
-        <FoodItem
-          key={index}
-          name={item.name}
-          calories={item.calories}
-          servingSize={item.servingSize}
-          brand={item.brand}
-        />
-      ))}
+    <View style={styles.container}>
+      <FlatList
+        data={foodItems}
+        renderItem={({ item }) => (
+          <FoodItem
+            name={item.name}
+            calories={item.calories}
+            servingSize={item.servingSize}
+            brand={item.brand}
+          />
+        )}
+        keyExtractor={(item) => item.name}
+      />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 20,
+    gap: 5,
+  },
+});
