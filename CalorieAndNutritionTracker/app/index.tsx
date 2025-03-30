@@ -1,3 +1,5 @@
+//index.tsx
+
 import { View, StyleSheet, TouchableOpacity, Animated, Keyboard } from "react-native";
 import { useState, useRef, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -45,6 +47,15 @@ export default function Index() {
       filtered = filtered.filter(item => item.category === selectedFilter);
     }
     
+    // Sort the filtered data to show favorites on top
+    filtered.sort((a, b) => {
+      // If one is favorite and the other isn't, favorite goes first
+      if (a.favorite && !b.favorite) return -1;
+      if (!a.favorite && b.favorite) return 1;
+      // Otherwise maintain the original order
+      return 0;
+    });
+    
     setFoodData(filtered);
     
     Animated.timing(slideAnim, {
@@ -77,6 +88,15 @@ export default function Index() {
     } else if (selectedFilter !== "all") {
       filtered = filtered.filter(item => item.category === selectedFilter);
     }
+    
+    // Sort the filtered data to show favorites on top
+    filtered.sort((a, b) => {
+      // If one is favorite and the other isn't, favorite goes first
+      if (a.favorite && !b.favorite) return -1;
+      if (!a.favorite && b.favorite) return 1;
+      // Otherwise maintain the original order
+      return 0;
+    });
     
     setFoodData(filtered);
   };
