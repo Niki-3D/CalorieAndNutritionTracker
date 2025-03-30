@@ -1,5 +1,5 @@
-import { Text, View, TouchableOpacity, Animated, StyleSheet } from "react-native";
-import { useRef } from "react";
+import { Text, View, TouchableOpacity, Animated, StyleSheet, Easing } from "react-native";
+import { useRef, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { FoodItem } from "../data/foodData";
 
@@ -10,7 +10,30 @@ interface FoodItemProps {
 
 const FoodItemComponent = ({ item, toggleFavorite }: FoodItemProps) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  
+  const slideUpAnim = useRef(new Animated.Value(0)).current;
+  const previousFavoriteState = useRef(item.favorite);
+
+  useEffect(() => {
+    if (item.favorite && !previousFavoriteState.current) {
+      slideUpAnim.setValue(0);
+      Animated.sequence([
+        Animated.timing(slideUpAnim, {
+          toValue: -15,
+          duration: 600,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideUpAnim, {
+          toValue: 0,
+          duration: 200,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        })
+      ]).start();
+    }
+    previousFavoriteState.current = item.favorite;
+  }, [item.favorite]);
+
   const handlePress = () => {
     Animated.sequence([
       Animated.timing(scaleAnim, {
@@ -26,11 +49,20 @@ const FoodItemComponent = ({ item, toggleFavorite }: FoodItemProps) => {
     ]).start();
   };
 
+  const handleFavoritePress = () => {
+    toggleFavorite(item.id);
+  };
+
   return (
     <Animated.View 
       style={[
         styles.foodItemContainer, 
-        { transform: [{ scale: scaleAnim }] }
+        { 
+          transform: [
+            { scale: scaleAnim },
+            { translateY: slideUpAnim }
+          ] 
+        }
       ]}
     >
       <TouchableOpacity 
@@ -47,7 +79,7 @@ const FoodItemComponent = ({ item, toggleFavorite }: FoodItemProps) => {
         </View>
         <TouchableOpacity 
           style={styles.favoriteButton} 
-          onPress={() => toggleFavorite(item.id)}
+          onPress={handleFavoritePress}
         >
           <Ionicons 
             name={item.favorite ? "heart" : "heart-outline"} 
