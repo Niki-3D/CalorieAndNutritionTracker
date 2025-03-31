@@ -95,12 +95,13 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderTopWidth: 1,
     borderTopColor: "#f0f0f0",
-    paddingBottom: 10,
+    paddingBottom: ,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: -5 },
     elevation: 10,
+    
   },
   navItem: {
     flex: 1,
@@ -116,6 +117,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f5f5f5",
     marginBottom: 4,
+    
+    
   },
   activeIconContainer: {
     backgroundColor: "#4CAF50",

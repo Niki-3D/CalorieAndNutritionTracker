@@ -1,7 +1,9 @@
+//FoodList.tsx
+
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FoodItemComponent from "./FoodItem";
-import { FoodItem } from "../data/foodData";
+import { FoodItem } from "../app/data/foodData";
 
 interface FoodListProps {
   filteredItems: FoodItem[];

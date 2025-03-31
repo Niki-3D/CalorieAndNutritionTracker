@@ -1,7 +1,7 @@
 import { Text, View, TouchableOpacity, Animated, StyleSheet, Easing } from "react-native";
 import { useRef, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { FoodItem } from "../data/foodData";
+import { FoodItem } from "../app/data/foodData";
 
 interface FoodItemProps {
   item: FoodItem;

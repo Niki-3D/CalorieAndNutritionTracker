@@ -1,13 +1,13 @@
-// app/index.tsx (Home screen)
+// app/profile.tsx (Profile screen)
 import { View, Text, StyleSheet } from "react-native";
 import Header from "../components/Header";
 
-export default function HomeScreen() {
+export default function ProfileScreen() {
   return (
     <View style={styles.container}>
-      <Header title="Home" />
+      <Header title="Profile" />
       <View style={styles.content}>
-        <Text style={styles.text}>Welcome to Food Tracker</Text>
+        <Text style={styles.text}>User Profile Screen</Text>
       </View>
     </View>
   );
@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    
   },
   text: {
     fontSize: 18,
