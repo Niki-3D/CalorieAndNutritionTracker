@@ -44,7 +44,7 @@ const NavItem = ({ title, iconName, isActive, onPress }: NavItemProps) => {
       >
         <Ionicons 
           name={iconName as any} 
-          size={22} 
+          size={24} 
           color={isActive ? "#FFFFFF" : "#777777"} 
         />
       </Animated.View>
@@ -95,19 +95,17 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderTopWidth: 1,
     borderTopColor: "#f0f0f0",
-    paddingBottom: ,
+    paddingBottom: 10,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: -5 },
     elevation: 10,
-    
   },
   navItem: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 12,
   },
   iconContainer: {
     width: 42,
@@ -117,8 +115,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f5f5f5",
     marginBottom: 4,
-    
-    
   },
   activeIconContainer: {
     backgroundColor: "#4CAF50",
