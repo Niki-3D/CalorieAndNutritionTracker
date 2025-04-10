@@ -11,7 +11,7 @@ interface NavItemProps {
 
 const NavItem = ({ title, iconName, isActive, onPress }: NavItemProps) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  
+
   const handlePress = () => {
     Animated.sequence([
       Animated.timing(scaleAnim, {
@@ -25,35 +25,37 @@ const NavItem = ({ title, iconName, isActive, onPress }: NavItemProps) => {
         useNativeDriver: true,
       }),
     ]).start();
-    
+
     onPress();
   };
-  
+
   return (
-    <TouchableOpacity 
-      style={styles.navItem} 
+    <TouchableOpacity
+      style={styles.navItem}
       onPress={handlePress}
       activeOpacity={0.7}
     >
-      <Animated.View
-        style={[
-          styles.iconContainer,
-          isActive && styles.activeIconContainer,
-          { transform: [{ scale: scaleAnim }] }
-        ]}
-      >
-        <Ionicons 
-          name={iconName as any} 
-          size={24} 
-          color={isActive ? "#FFFFFF" : "#777777"} 
-        />
-      </Animated.View>
-      <Text style={[
-        styles.navText,
-        isActive && styles.activeNavText
-      ]}>
-        {title}
-      </Text>
+      <View style={styles.iconAndText}>
+        <Animated.View
+          style={[
+            styles.iconContainer,
+            isActive && styles.activeIconContainer,
+            { transform: [{ scale: scaleAnim }] }
+          ]}
+        >
+          <Ionicons
+            name={iconName as any}
+            size={24}
+            color={isActive ? "#FFFFFF" : "#777777"}
+          />
+        </Animated.View>
+        <Text style={[
+          styles.navText,
+          isActive && styles.activeNavText
+        ]}>
+          {title}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -66,23 +68,23 @@ interface BottomNavBarProps {
 const BottomNavBar = ({ activePage, onPageChange }: BottomNavBarProps) => {
   return (
     <View style={styles.container}>
-      <NavItem 
-        title="Home" 
-        iconName="home" 
-        isActive={activePage === "home"} 
-        onPress={() => onPageChange("home")} 
+      <NavItem
+        title="Home"
+        iconName="home"
+        isActive={activePage === "home"}
+        onPress={() => onPageChange("home")}
       />
-      <NavItem 
-        title="Meals" 
-        iconName="restaurant" 
-        isActive={activePage === "meal"} 
-        onPress={() => onPageChange("meal")} 
+      <NavItem
+        title="Meals"
+        iconName="restaurant"
+        isActive={activePage === "meal"}
+        onPress={() => onPageChange("meal")}
       />
-      <NavItem 
-        title="Profile" 
-        iconName="person" 
-        isActive={activePage === "profile"} 
-        onPress={() => onPageChange("profile")} 
+      <NavItem
+        title="Profile"
+        iconName="person"
+        isActive={activePage === "profile"}
+        onPress={() => onPageChange("profile")}
       />
     </View>
   );
@@ -106,6 +108,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  iconAndText: {
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "column",
   },
   iconContainer: {
     width: 42,

@@ -1,9 +1,8 @@
-//FoodList.tsx
-
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FoodItemComponent from "./FoodItem";
 import { FoodItem } from "../app/data/foodData";
+import { dailyData } from "../app/data/dailyData";
 
 interface FoodListProps {
   filteredItems: FoodItem[];
@@ -11,14 +10,51 @@ interface FoodListProps {
 }
 
 const FoodList = ({ filteredItems, toggleFavorite }: FoodListProps) => {
-  // We need to ensure the component is correctly rendering the food items
+  // Function to add a meal to today's log
+  const addMealToToday = (id: string, servingMultiplier: number) => {
+    // Find the selected food item
+    const foodItem = filteredItems.find(item => item.id === id);
+    
+    if (foodItem) {
+      // In a real app, you would update your state or make an API call
+      // For now, we'll just show an alert to demonstrate
+      Alert.alert(
+        "Meal Added",
+        `Added ${foodItem.name} (${servingMultiplier}x serving) to today's log.\nTotal calories: ${Math.round(foodItem.calories * servingMultiplier)}`,
+        [{ text: "OK" }]
+      );
+      
+      // Here you would update your dailyData or make an API call
+      // Example of what you might do in a real implementation:
+      /* 
+      const newMeal = {
+        id: `meal-${Date.now()}`,
+        name: foodItem.name,
+        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        calories: Math.round(foodItem.calories * servingMultiplier),
+        carbs: Math.round(estimatedCarbs),
+        protein: Math.round(estimatedProtein),
+        fat: Math.round(estimatedFat),
+        foodItems: [foodItem.id]
+      };
+      
+      // Update your state or make API call
+      addMealToDaily(newMeal);
+      */
+    }
+  };
+
   return (
     <>
       {filteredItems.length > 0 ? (
         <FlatList
           data={filteredItems}
           renderItem={({ item }) => (
-            <FoodItemComponent item={item} toggleFavorite={toggleFavorite} />
+            <FoodItemComponent 
+              item={item} 
+              toggleFavorite={toggleFavorite}
+              addMealToToday={addMealToToday} 
+            />
           )}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
