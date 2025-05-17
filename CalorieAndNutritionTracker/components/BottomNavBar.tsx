@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f5f5f5",
-    marginBottom: 4,
+    marginBottom: 5,
   },
   activeIconContainer: {
     backgroundColor: "#4CAF50",
