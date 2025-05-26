@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Platform, StatusBar } from "react-native";
 
 interface HeaderProps {
   title: string;
@@ -7,6 +7,7 @@ interface HeaderProps {
 const Header = ({ title }: HeaderProps) => {
   return (
     <View style={styles.header}>
+      <View style={styles.statusBarSpace} />
       <Text style={styles.headerTitle}>{title}</Text>
     </View>
   );
@@ -14,15 +15,19 @@ const Header = ({ title }: HeaderProps) => {
 
 const styles = StyleSheet.create({
   header: {
-    padding: 20,
-    paddingTop: 50,
     backgroundColor: "#4CAF50",
     marginBottom: 10,
   },
+  statusBarSpace: {
+    height: Platform.OS === 'ios' ? 50 : StatusBar.currentHeight,
+  },
   headerTitle: {
     color: "white",
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 24,
+    fontWeight: "600",
+    padding: 15,
+    paddingTop: 5,
+    paddingBottom: 15,
   },
 });
 

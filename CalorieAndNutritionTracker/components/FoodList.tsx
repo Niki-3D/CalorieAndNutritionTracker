@@ -1,59 +1,35 @@
-import { View, Text, FlatList, StyleSheet, Alert } from "react-native";
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FoodItemComponent from "./FoodItem";
 import { FoodItem } from "../app/data/foodData";
-import { dailyData } from "../app/data/dailyData";
 
 interface FoodListProps {
-  filteredItems: FoodItem[];
-  toggleFavorite: (id: string) => void;
+  data: FoodItem[];
+  onFavoritePress: (id: string) => void;
+  onAddPress: (foodItem: FoodItem, servingMultiplier: number) => Promise<void>;
+  isLoading: boolean;
 }
 
-const FoodList = ({ filteredItems, toggleFavorite }: FoodListProps) => {
-  // Function to add a meal to today's log
-  const addMealToToday = (id: string, servingMultiplier: number) => {
-    // Find the selected food item
-    const foodItem = filteredItems.find(item => item.id === id);
-    
-    if (foodItem) {
-      // In a real app, you would update your state or make an API call
-      // For now, we'll just show an alert to demonstrate
-      Alert.alert(
-        "Meal Added",
-        `Added ${foodItem.name} (${servingMultiplier}x serving) to today's log.\nTotal calories: ${Math.round(foodItem.calories * servingMultiplier)}`,
-        [{ text: "OK" }]
-      );
-      
-      // Here you would update your dailyData or make an API call
-      // Example of what you might do in a real implementation:
-      /* 
-      const newMeal = {
-        id: `meal-${Date.now()}`,
-        name: foodItem.name,
-        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-        calories: Math.round(foodItem.calories * servingMultiplier),
-        carbs: Math.round(estimatedCarbs),
-        protein: Math.round(estimatedProtein),
-        fat: Math.round(estimatedFat),
-        foodItems: [foodItem.id]
-      };
-      
-      // Update your state or make API call
-      addMealToDaily(newMeal);
-      */
-    }
-  };
+const FoodList = ({ data, onFavoritePress, onAddPress, isLoading }: FoodListProps) => {
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text style={styles.loadingText}>Adding meal...</Text>
+      </View>
+    );
+  }
 
   return (
     <>
-      {filteredItems.length > 0 ? (
+      {data.length > 0 ? (
         <FlatList
-          data={filteredItems}
+          data={data}
           renderItem={({ item }) => (
             <FoodItemComponent 
               item={item} 
-              toggleFavorite={toggleFavorite}
-              addMealToToday={addMealToToday} 
+              toggleFavorite={onFavoritePress}
+              addMealToToday={onAddPress} 
             />
           )}
           keyExtractor={(item) => item.id}
@@ -64,26 +40,54 @@ const FoodList = ({ filteredItems, toggleFavorite }: FoodListProps) => {
         <View style={styles.emptyState}>
           <Ionicons name="nutrition-outline" size={50} color="#ddd" />
           <Text style={styles.emptyStateText}>No food items found</Text>
+          <Text style={styles.emptyStateSubtext}>Try adjusting your search</Text>
         </View>
       )}
     </>
   );
 };
 
+const { width } = Dimensions.get('window');
+const cardPadding = Math.min(15, width * 0.04);
+
 const styles = StyleSheet.create({
   listContent: {
-    paddingBottom: 80, 
+    paddingVertical: cardPadding,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: cardPadding * 1.5,
+    marginTop: cardPadding,
+    minHeight: 200,
+  },
+  loadingText: {
+    marginTop: cardPadding,
+    fontSize: Math.min(16, width * 0.04),
+    color: "#666",
   },
   emptyState: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 40,
+    justifyContent: "center",
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: cardPadding * 1.5,
+    marginTop: cardPadding,
+    minHeight: 200,
   },
   emptyStateText: {
-    marginTop: 10,
-    fontSize: 16,
+    fontSize: Math.min(18, width * 0.045),
+    color: "#666",
+    marginTop: cardPadding,
+  },
+  emptyStateSubtext: {
+    fontSize: Math.min(14, width * 0.035),
     color: "#999",
+    marginTop: cardPadding / 2,
   },
 });
 

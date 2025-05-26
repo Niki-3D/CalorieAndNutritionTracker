@@ -1,6 +1,6 @@
 // app/index.tsx (Home screen)
-import React, { useEffect, useRef } from "react";
-import { View, Text, StyleSheet, ScrollView, Animated, TouchableOpacity } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Header from "../components/Header";
 import CalorieProgressBar from "../components/CalorieProgressBar";
@@ -8,78 +8,108 @@ import NutritionDonut from "../components/NutritionDonut";
 import MacroSummary from "../components/MacroSummary";
 import NutrientsMissing from "../components/NutrientsMissing";
 import MealsList from "../components/MealsList";
-import { dailyData } from "./data/dailyData";
+import { dailyData, DailyDataManager } from "./data/dailyData";
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function HomeScreen() {
+  const [currentDailyData, setCurrentDailyData] = useState(dailyData);
+  const [isLoading, setIsLoading] = useState(true);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+  const isMounted = useRef(true);
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
+  const loadDailyData = async () => {
+    try {
+      console.log('Loading daily data in HomeScreen...');
+      setIsLoading(true);
+      const data = await DailyDataManager.load();
+      console.log('Loaded data:', JSON.stringify(data, null, 2));
+      
+      if (isMounted.current) {
+        setCurrentDailyData(data);
+        console.log('State updated with new data');
+      }
+    } catch (error) {
+      console.error('Error loading daily data:', error);
+    } finally {
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  // Load data when the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('Screen focused, loading data...');
+      isMounted.current = true;
+      loadDailyData();
+      return () => {
+        console.log('Screen unfocused');
+        isMounted.current = false;
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    if (!isLoading) {
+      console.log('Starting animations...');
+      fadeAnim.setValue(0);
+      slideAnim.setValue(50);
+      
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        console.log('Animations completed');
+      });
+    }
+  }, [isLoading]);
+
+  // Calculate values from sanitized data
+  const consumed = Number(currentDailyData.caloriesConsumed);
+  const goal = Number(currentDailyData.caloriesGoal);
   const caloriePercentage = Math.min(
-    (dailyData.caloriesConsumed / dailyData.caloriesGoal) * 100, 
+    Math.round((consumed / goal) * 100),
     100
   );
 
+  console.log('Rendering with values:', { consumed, goal, caloriePercentage });
+
   return (
     <View style={styles.container}>
-      <Header title="Daily Summary" />
+      <Header title="Today" />
       
       <ScrollView 
+        style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
       >
         <Animated.View style={[
-          styles.streakContainer,
+          styles.calorieContainer,
           { 
             opacity: fadeAnim,
             transform: [{ translateY: slideAnim }]
           }
         ]}>
-          <View style={styles.streakIconContainer}>
-            <Ionicons name="flame" size={22} color="#FF9500" />
-          </View>
-          <Text style={styles.streakText}>
-            {dailyData.streak} day streak! Keep it up!
-          </Text>
-        </Animated.View>
-        
-        <Animated.View style={[
-          styles.sectionContainer,
-          { 
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }]
-          }
-        ]}>
-          <Text style={styles.sectionTitle}>Daily Calories</Text>
           <CalorieProgressBar 
-            consumed={dailyData.caloriesConsumed} 
-            goal={dailyData.caloriesGoal} 
             percentage={caloriePercentage}
+            consumed={consumed}
+            goal={goal}
           />
-          
-          <View style={styles.calorieTextContainer}>
-            <Text style={styles.calorieText}>
-              <Text style={styles.highlightedText}>{dailyData.caloriesConsumed}</Text> 
-              <Text style={styles.subText}> / {dailyData.caloriesGoal} kcal</Text>
-            </Text>
-            <Text style={styles.remainingText}>
-              {dailyData.caloriesGoal - dailyData.caloriesConsumed} kcal remaining
-            </Text>
-          </View>
         </Animated.View>
         
         <Animated.View style={[
@@ -90,9 +120,9 @@ export default function HomeScreen() {
           }
         ]}>
           <NutritionDonut 
-            caloriesConsumed={dailyData.caloriesConsumed}
-            caloriesGoal={dailyData.caloriesGoal}
-            nutrients={dailyData.nutrients}
+            caloriesConsumed={consumed}
+            caloriesGoal={goal}
+            nutrients={currentDailyData.nutrients}
           />
         </Animated.View>
         
@@ -104,7 +134,7 @@ export default function HomeScreen() {
           }
         ]}>
           <Text style={styles.sectionTitle}>Macronutrients</Text>
-          <MacroSummary macros={dailyData.macros} />
+          <MacroSummary macros={currentDailyData?.macros || dailyData.macros} />
         </Animated.View>
         
         <Animated.View style={[
@@ -116,11 +146,9 @@ export default function HomeScreen() {
         ]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Nutrients Needed</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllButton}>See All</Text>
-            </TouchableOpacity>
+            <Text style={styles.seeAllButton}>See All</Text>
           </View>
-          <NutrientsMissing nutrients={dailyData.nutrients} />
+          <NutrientsMissing nutrients={currentDailyData?.nutrients || []} />
         </Animated.View>
         
         <Animated.View style={[
@@ -132,11 +160,8 @@ export default function HomeScreen() {
         ]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Today's Meals</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllButton}>Add Meal</Text>
-            </TouchableOpacity>
           </View>
-          <MealsList meals={dailyData.meals} />
+          <MealsList meals={currentDailyData?.meals || []} />
         </Animated.View>
       </ScrollView>
     </View>
@@ -146,77 +171,54 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#f5f5f5",
   },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
+  scrollView: {
+    flex: 1,
   },
-  streakContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFF5E6",
-    padding: 12,
+  calorieContainer: {
+    marginTop: 20,
+    marginBottom: 12,
+    paddingHorizontal: 12,
+  },
+  nutritionContainer: {
+    backgroundColor: "white",
     borderRadius: 12,
-    marginTop: 10,
-    marginBottom: 15,
-  },
-  streakIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#FFEACC",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  streakText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#FF9500",
+    padding: 15,
+    marginBottom: 12,
+    marginHorizontal: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   sectionContainer: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#333",
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 15,
     marginBottom: 12,
+    marginHorizontal: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
   },
   seeAllButton: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#4CAF50",
-    fontWeight: "600",
-  },
-  nutritionContainer: {
-    alignItems: "center",
-    marginVertical: 15,
-  },
-  calorieTextContainer: {
-    alignItems: "center",
-    marginTop: 8,
-  },
-  calorieText: {
-    fontSize: 16,
     fontWeight: "500",
-    marginBottom: 4,
-  },
-  highlightedText: {
-    fontWeight: "700",
-    color: "#4CAF50",
-  },
-  subText: {
-    color: "#777",
-  },
-  remainingText: {
-    fontSize: 14,
-    color: "#777",
   },
 });

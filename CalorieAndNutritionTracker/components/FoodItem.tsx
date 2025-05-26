@@ -6,7 +6,7 @@ import { FoodItem } from "../app/data/foodData";
 interface FoodItemProps {
   item: FoodItem;
   toggleFavorite: (id: string) => void;
-  addMealToToday?: (id: string, servingMultiplier: number) => void;
+  addMealToToday: (foodItem: FoodItem, servingMultiplier: number) => Promise<void>;
 }
 
 const FoodItemComponent = ({ item, toggleFavorite, addMealToToday }: FoodItemProps) => {
@@ -68,10 +68,8 @@ const FoodItemComponent = ({ item, toggleFavorite, addMealToToday }: FoodItemPro
   };
 
   const handleAddToToday = () => {
-    if (addMealToToday) {
-      addMealToToday(item.id, servingMultiplier);
-      setExpanded(false);
-    }
+    addMealToToday(item, servingMultiplier);
+    setExpanded(false);
   };
 
   const incrementServing = () => {
@@ -85,37 +83,10 @@ const FoodItemComponent = ({ item, toggleFavorite, addMealToToday }: FoodItemPro
   // Calculate nutrition based on serving multiplier
   const calculatedCalories = Math.round(item.calories * servingMultiplier);
   
-  // Estimated macros based on food category (in a real app, these would come from your database)
-  let estimatedCarbs = 0;
-  let estimatedProtein = 0;
-  let estimatedFat = 0;
-  
-  switch(item.category) {
-    case 'fruits':
-      estimatedCarbs = Math.round(item.calories * 0.25 * servingMultiplier);
-      estimatedProtein = Math.round(item.calories * 0.02 * servingMultiplier);
-      estimatedFat = Math.round(item.calories * 0.01 * servingMultiplier);
-      break;
-    case 'vegetables':
-      estimatedCarbs = Math.round(item.calories * 0.2 * servingMultiplier);
-      estimatedProtein = Math.round(item.calories * 0.05 * servingMultiplier);
-      estimatedFat = Math.round(item.calories * 0.01 * servingMultiplier);
-      break;
-    case 'meat':
-      estimatedCarbs = Math.round(item.calories * 0.05 * servingMultiplier);
-      estimatedProtein = Math.round(item.calories * 0.3 * servingMultiplier);
-      estimatedFat = Math.round(item.calories * 0.15 * servingMultiplier);
-      break;
-    case 'full dish':
-      estimatedCarbs = Math.round(item.calories * 0.15 * servingMultiplier);
-      estimatedProtein = Math.round(item.calories * 0.1 * servingMultiplier);
-      estimatedFat = Math.round(item.calories * 0.08 * servingMultiplier);
-      break;
-    default:
-      estimatedCarbs = Math.round(item.calories * 0.15 * servingMultiplier);
-      estimatedProtein = Math.round(item.calories * 0.1 * servingMultiplier);
-      estimatedFat = Math.round(item.calories * 0.05 * servingMultiplier);
-  }
+  // Calculate macros based on the item's actual values
+  const calculatedCarbs = Math.round(item.macros.carbs * servingMultiplier);
+  const calculatedProtein = Math.round(item.macros.protein * servingMultiplier);
+  const calculatedFat = Math.round(item.macros.fat * servingMultiplier);
 
   const expandHeight = expandAnim.interpolate({
     inputRange: [0, 1],
@@ -167,15 +138,15 @@ const FoodItemComponent = ({ item, toggleFavorite, addMealToToday }: FoodItemPro
             <Text style={styles.nutritionLabel}>Calories</Text>
           </View>
           <View style={styles.nutritionItem}>
-            <Text style={[styles.nutritionValue, styles.carbsText]}>{estimatedCarbs}g</Text>
+            <Text style={[styles.nutritionValue, styles.carbsText]}>{calculatedCarbs}g</Text>
             <Text style={styles.nutritionLabel}>Carbs</Text>
           </View>
           <View style={styles.nutritionItem}>
-            <Text style={[styles.nutritionValue, styles.proteinText]}>{estimatedProtein}g</Text>
+            <Text style={[styles.nutritionValue, styles.proteinText]}>{calculatedProtein}g</Text>
             <Text style={styles.nutritionLabel}>Protein</Text>
           </View>
           <View style={styles.nutritionItem}>
-            <Text style={[styles.nutritionValue, styles.fatText]}>{estimatedFat}g</Text>
+            <Text style={[styles.nutritionValue, styles.fatText]}>{calculatedFat}g</Text>
             <Text style={styles.nutritionLabel}>Fat</Text>
           </View>
         </View>
@@ -250,36 +221,19 @@ const styles = StyleSheet.create({
     color: "#888",
   },
   favoriteButton: {
-    padding: 5,
-  },
-  categoryTag: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    backgroundColor: "#EEFFF0",
-    borderWidth: 1,
-    borderColor: "#E0F2E0",
-  },
-  categoryText: {
-    fontSize: 10,
-    color: "#3A9D42",
-    textTransform: "capitalize",
+    padding: 8,
   },
   expandedContent: {
     overflow: "hidden",
   },
   divider: {
     height: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#eee",
     marginHorizontal: 15,
   },
   nutritionContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
+    justifyContent: "space-around",
     paddingVertical: 15,
   },
   nutritionItem: {
@@ -287,41 +241,35 @@ const styles = StyleSheet.create({
   },
   nutritionValue: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#333",
-  },
-  // Updated color styles to match home page
-  calorieText: {
-    color: "#4CAF50", // Green for calories
-    fontWeight: "700",
-  },
-  carbsText: {
-    color: "#3DD598", // Green for carbs
-    fontWeight: "700",
-  },
-  proteinText: {
-    color: "#FFB572", // Orange for protein
-    fontWeight: "700",
-  },
-  fatText: {
-    color: "#9059FF", // Purple for fat
-    fontWeight: "700",
+    fontWeight: "600",
+    marginBottom: 2,
   },
   nutritionLabel: {
     fontSize: 12,
-    color: "#777",
-    marginTop: 2,
+    color: "#666",
+  },
+  calorieText: {
+    color: "#4CAF50",
+  },
+  carbsText: {
+    color: "#3DD598",
+  },
+  proteinText: {
+    color: "#FFB572",
+  },
+  fatText: {
+    color: "#9059FF",
   },
   servingContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
     marginBottom: 15,
   },
   servingLabel: {
     fontSize: 14,
-    color: "#555",
+    color: "#666",
   },
   servingControls: {
     flexDirection: "row",
@@ -331,31 +279,44 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#f5f5f5",
     justifyContent: "center",
     alignItems: "center",
   },
   servingValue: {
     fontSize: 16,
     fontWeight: "600",
-    marginHorizontal: 10,
-    minWidth: 30,
-    textAlign: "center",
+    marginHorizontal: 12,
+    color: "#333",
   },
   addButton: {
+    backgroundColor: "#4CAF50",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#4CAF50",
-    marginHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 10,
+    marginHorizontal: 15,
+    borderRadius: 8,
     marginBottom: 15,
   },
   addButtonText: {
     color: "white",
+    fontSize: 14,
     fontWeight: "600",
-    marginLeft: 5,
+    marginLeft: 8,
+  },
+  categoryTag: {
+    position: "absolute",
+    top: 15,
+    right: 50,
+    backgroundColor: "#f5f5f5",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  categoryText: {
+    fontSize: 12,
+    color: "#666",
   },
 });
 

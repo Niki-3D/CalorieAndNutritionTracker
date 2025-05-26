@@ -93,11 +93,11 @@ const BottomNavBar = ({ activePage, onPageChange }: BottomNavBarProps) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    height: 70,
+    height: 100,
     backgroundColor: "white",
     borderTopWidth: 1,
     borderTopColor: "#f0f0f0",
-    paddingBottom: 10,
+    paddingBottom: 15,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 10,
@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingTop: 5,
   },
   iconAndText: {
     alignItems: "center",
@@ -115,20 +116,21 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   iconContainer: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 45,
+    height: 45,
+    borderRadius: 23,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f5f5f5",
-    marginBottom: 5,
+    marginBottom: 6,
   },
   activeIconContainer: {
     backgroundColor: "#4CAF50",
   },
   navText: {
-    fontSize: 12,
+    fontSize: 9,
     color: "#777777",
+    marginTop: 2,
   },
   activeNavText: {
     color: "#4CAF50",
